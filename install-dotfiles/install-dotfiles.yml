@@ -1,0 +1,45 @@
+- hosts: localhost
+  become: no
+
+  tasks:
+  - name: Install zsh
+    become: yes
+    package:
+      name: "zsh"
+      state: latest
+
+  - name: Configure Oh My Zsh for {{ ansible_user_id }}
+    include_role:
+      name: gantsign.oh-my-zsh
+    vars:
+      oh_my_zsh_update_mode: auto
+      oh_my_zsh_update_frequency: 14
+      users:
+        - username: "{{ ansible_user_id }}"
+          oh_my_zsh:
+            theme: alanpeabody
+            plugins:
+              - git
+              - timer
+              - zsh-autosuggestions
+
+  - name: Clone zsh-autosuggestions
+    git:
+      repo: https://github.com/zsh-users/zsh-autosuggestions.git
+      dest: "~/.oh-my-zsh/plugins/zsh-autosuggestions"
+
+
+  - name: Install packages used by aliases
+    package:
+      name: "exa"
+      state: latest
+
+  - name: Clone dotfiles
+    git:
+      repo: "https://gitlab.com/Xelofan/dotfiles"
+      dest: '~/dotfiles'
+
+  - name: Add aliases to zshrc
+    blockinfile:
+      path: "~/.zshrc"
+      block: "source ~/dotfiles/main.sh"
