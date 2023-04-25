@@ -37,7 +37,7 @@
 
   - name: Clone dotfiles
     git:
-      repo: "https://gitlab.com/Xelofan/dotfiles"
+      repo: "https://github.com/Xelofan/dotfiles"
       dest: '~/dotfiles'
 
   - name: Add aliases to zshrc
