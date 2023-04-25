@@ -30,6 +30,7 @@
 
 
   - name: Install packages used by aliases
+    become: yes
     package:
       name: "exa"
       state: latest
