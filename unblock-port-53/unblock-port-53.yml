@@ -1,0 +1,30 @@
+- hosts: localhost
+  become: yes
+  tasks:
+  - name: Uncomment DNS & use Quad9
+    lineinfile:
+      path: /etc/systemd/resolved.conf
+      regexp: '^#DNS='
+      line: 'DNS=9.9.9.9'
+    register: modification
+
+  - name: Uncomment DNSStubListener & set it to no
+    lineinfile:
+      path: /etc/systemd/resolved.conf
+      regexp: '^#DNSStubListener='
+      line: 'DNSStubListener=no'
+
+  - name: Create resolv symlink
+    file:
+      src: /run/systemd/resolve/resolv.conf
+      dest: /etc/resolv.conf
+      state: link
+      force: yes
+    register: modification
+
+  - name: Reboot reminder
+    when: modification.changed
+    debug:
+      msg:
+        - "You'll have to reboot to apply DNS changes"
+    
