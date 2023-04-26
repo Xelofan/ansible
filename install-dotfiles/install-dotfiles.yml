@@ -1,8 +1,12 @@
 - hosts: localhost
   become: no
 
+  vars:
+    alias_packages: "exa"
+
   tasks:
   - name: Install zsh
+    when: ansible_distribution != "MacOSX"
     become: yes
     package:
       name: "zsh"
@@ -30,9 +34,17 @@
 
 
   - name: Install packages used by aliases
+    when: ansible_distribution != "MacOSX"
     become: yes
     package:
-      name: "exa"
+      name: "{{ alias_packages }}"
+      state: latest
+
+  - name: Install packages used by aliases (macOS)
+    when: ansible_distribution == "MacOSX"
+    #become: yes
+    package:
+      name: "{{ alias_packages }}"
       state: latest
 
   - name: Clone dotfiles
