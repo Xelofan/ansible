@@ -6,7 +6,7 @@ By default port 53 is used by systemd-resolved on Ubuntu, it means that you can'
 
 ## Running the playbook
 ```ansible
-ansible-pull -U https://github.com/xelofan/ansible-projects unblock-port-53/unblock-port-53.yml 
+ansible-pull -U https://github.com/xelofan/ansible unblock-port-53/unblock-port-53.yml 
 ```
 
 **You'll have to reboot to apply the changes.**
