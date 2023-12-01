@@ -14,8 +14,8 @@
       name: "zsh"
       state: present
 
-  - name: Install other packages
-    become: yes
+  - name: Install wget on macOS
+    when: ansible_distribution == "MacOSX"
     package:
       name: "wget"
       state: present
@@ -47,11 +47,18 @@
       state: present
 
   - name: Install eza
+    when: ansible_distribution != "MacOSX"
     become: yes
     package:
       name: eza
       state: present
       update_cache: yes
+      
+  - name: Install eza (macOS)
+    when: ansible_distribution == "MacOSX"
+    package:
+      name: eza
+      state: present
 
   - name: Configure Oh My Zsh for {{ ansible_user_id }}
     include_role:
