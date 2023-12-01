@@ -2,7 +2,7 @@
   become: no
 
   vars:
-    packages: "wget, thefuck"
+    packages: "wget,thefuck"
 
   tasks:
   - name: Install gantsign.oh-my-zsh role from Ansible Galaxy
