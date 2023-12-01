@@ -1,6 +1,9 @@
 - hosts: localhost
   become: no
 
+  vars:
+    packages: "wget thefuck"
+
   tasks:
   - name: Install gantsign.oh-my-zsh role from Ansible Galaxy
     community.general.ansible_galaxy_install:
@@ -14,10 +17,17 @@
       name: "zsh"
       state: present
 
-  - name: Install wget on macOS
+  - name: Install packages used by aliases
+    when: ansible_distribution != "MacOSX"
+    become: yes
+    package:
+      name: "{{ packages }}"
+      state: present
+
+  - name: Install packages used by aliases (macOS)
     when: ansible_distribution == "MacOSX"
     package:
-      name: "wget"
+      name: "{{ packages }}"
       state: present
 
   - name: Install eza [1/4] - Install gpg (Debian/Ubuntu)
@@ -84,21 +94,6 @@
     git:
       repo: https://github.com/zsh-users/zsh-syntax-highlighting.git
       dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
-
-
-  # - name: Install packages used by aliases
-  #   when: ansible_distribution != "MacOSX"
-  #   become: yes
-  #   package:
-  #     name: "{{ alias_packages }}"
-  #     state: latest
-
-  # - name: Install packages used by aliases (macOS)
-  #   when: ansible_distribution == "MacOSX"
-  #   #become: yes
-  #   package:
-  #     name: "{{ alias_packages }}"
-  #     state: latest
 
   - name: Clone dotfiles
     git:
