@@ -1,9 +1,6 @@
 - hosts: localhost
   become: no
 
-  vars:
-    alias_packages: "exa"
-
   tasks:
   - name: Install gantsign.oh-my-zsh role from Ansible Galaxy
     community.general.ansible_galaxy_install:
@@ -16,6 +13,39 @@
     package:
       name: "zsh"
       state: latest
+
+  - name: Install eza [1/4] - Install gpg (Debian/Ubuntu)
+    become: yes
+    when: ansible_distribution_file_variety == "Debian"
+    package:
+      name: gpg
+      state: present
+  - name: Install eza [2/4] - Create keyrings folder (Debian/Ubuntu)
+    become: yes
+    when: ansible_distribution_file_variety == "Debian"
+    file:
+      path: /etc/apt/keyrings/
+      state: directory
+  - name: Install eza [3/4] - Add GPG key (Debian/Ubuntu)
+    become: yes
+    when: ansible_distribution_file_variety == "Debian"
+    apt_key:
+      url: https://raw.githubusercontent.com/eza-community/eza/main/deb.asc
+      keyring: /etc/apt/keyrings/gierens.gpg
+      state: present
+  - name: Install eza [4/4] - Add eza repo (Debian/Ubuntu)
+    become: yes
+    when: ansible_distribution_file_variety == "Debian"
+    apt_repository:
+      repo: deb [signed-by=/etc/apt/keyrings/gierens.gpg] http://deb.gierens.de stable main
+      state: present
+
+  - name: Install eza
+    become: yes
+    package:
+      name: eza
+      state: present
+      update_cache: yes
 
   - name: Configure Oh My Zsh for {{ ansible_user_id }}
     include_role:
@@ -43,26 +73,28 @@
       dest: "~/.oh-my-zsh/plugins/zsh-syntax-highlighting"
 
 
-  - name: Install packages used by aliases
-    when: ansible_distribution != "MacOSX"
-    become: yes
-    package:
-      name: "{{ alias_packages }}"
-      state: latest
+  # - name: Install packages used by aliases
+  #   when: ansible_distribution != "MacOSX"
+  #   become: yes
+  #   package:
+  #     name: "{{ alias_packages }}"
+  #     state: latest
 
-  - name: Install packages used by aliases (macOS)
-    when: ansible_distribution == "MacOSX"
-    #become: yes
-    package:
-      name: "{{ alias_packages }}"
-      state: latest
+  # - name: Install packages used by aliases (macOS)
+  #   when: ansible_distribution == "MacOSX"
+  #   #become: yes
+  #   package:
+  #     name: "{{ alias_packages }}"
+  #     state: latest
 
   - name: Clone dotfiles
     git:
       repo: "https://github.com/Xelofan/dotfiles"
       dest: '~/dotfiles'
 
-  - name: Add aliases to zshrc
+  - name: Add block to zshrc
     blockinfile:
       path: "~/.zshrc"
-      block: "source ~/dotfiles/main.sh"
+      block: |
+        source ~/dotfiles/main.sh
+        eval $(thefuck --alias)
