@@ -5,6 +5,11 @@
     alias_packages: "exa"
 
   tasks:
+  - name: Install gantsign.oh-my-zsh role from Ansible Galaxy
+    community.general.ansible_galaxy_install:
+      type: role
+      name: gantsign.oh-my-zsh
+
   - name: Install zsh
     when: ansible_distribution != "MacOSX"
     become: yes
