@@ -2,7 +2,7 @@
   become: no
 
   vars:
-    packages: "wget thefuck"
+    packages: "wget, thefuck"
 
   tasks:
   - name: Install gantsign.oh-my-zsh role from Ansible Galaxy
@@ -17,14 +17,14 @@
       name: "zsh"
       state: present
 
-  - name: Install packages used by aliases
+  - name: Install packages
     when: ansible_distribution != "MacOSX"
     become: yes
     package:
       name: "{{ packages }}"
       state: present
 
-  - name: Install packages used by aliases (macOS)
+  - name: Install packages (macOS)
     when: ansible_distribution == "MacOSX"
     package:
       name: "{{ packages }}"
