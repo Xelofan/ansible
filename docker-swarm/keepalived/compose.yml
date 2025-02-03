@@ -1,0 +1,19 @@
+services:
+  keepalived:
+    image: ghcr.io/lhns/keepalived-swarm
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - host
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role == manager]
+    environment:
+      TZ: "Europe/Budapest"
+      KEEPALIVED_VIRTUAL_IPS: "#VIP#"
+
+networks:
+  host:
+    external: true
+    name: host

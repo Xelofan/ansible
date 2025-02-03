@@ -1,0 +1,51 @@
+- name: Install dependencies
+  package:
+    name: "python3-docker,python3-jsondiff"
+    state: present
+
+- name: Create swarm
+  run_once: true
+  community.docker.docker_swarm:
+    state: present
+    default_addr_pool: "{{ address_pool }}"
+  register: swarm
+
+- name: Join other nodes to cluster
+  when: inventory_hostname != ansible_play_hosts[0]
+  community.docker.docker_swarm:
+    state: join
+    remote_addrs: ["{{ ansible_play_hosts[0] }}:2377"]
+    join_token: "{{ swarm.swarm_facts.JoinTokens.Manager }}"
+
+- name: Copy keepalived folder
+  run_once: true
+  copy:
+    src: ./keepalived
+    dest: /mnt/
+    owner: 1000
+    group: 1000
+    force: false
+  register: copy
+
+- name: "Replace #VIP# with the vip variable"
+  when: copy.changed
+  run_once: true
+  replace:
+    path: /mnt/keepalived/compose.yml
+    regexp: "#VIP#"
+    replace: "{{ vip }}"
+
+- name: Assign keepalived priority labels to nodes
+  community.docker.docker_node:
+    hostname: "{{ ansible_hostname }}"
+    labels:
+      KEEPALIVED_PRIORITY: "{{ ansible_play_hosts.index(inventory_hostname) + 1 }}"
+
+- name: Deploy keepalived
+  run_once: true
+  community.docker.docker_stack:
+    state: present
+    name: keepalived
+    compose:
+      - /mnt/keepalived/compose.yml
+    prune: true
